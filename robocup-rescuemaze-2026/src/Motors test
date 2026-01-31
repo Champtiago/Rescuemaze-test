@@ -1,0 +1,57 @@
+#include <Arduino.h>
+#include "Encoder.h"
+#include "Test.h"
+
+
+int servopos=0;
+void setup() {
+  // put your setup code here, to run once:
+  pinMode(2,OUTPUT);
+  digitalWrite(2,1);
+  Serial.begin(115200);
+  robot.setupMotors();
+  attachInterrupt(digitalPinToInterrupt(Pins::encoder[MotorID::kFrontLeft]), Interrups::frontLeftEncoder, RISING);
+  attachInterrupt(digitalPinToInterrupt(Pins::encoder[MotorID::kFrontRight]), Interrups::frontRightEncoder, RISING);
+  attachInterrupt(digitalPinToInterrupt(Pins::encoder[MotorID::kBackLeft]), Interrups::backLeftEncoder, RISING);
+  attachInterrupt(digitalPinToInterrupt(Pins::encoder[MotorID::kBackRight]), Interrups::backRightEncoder, RISING);
+  // robot.reloadKits();
+}
+
+void loop() {
+  testEncoders();
+  testMotors();
+  // // robot.leds.sequency();
+
+  // robot.kitLeft(1);
+  // delay(1000);
+  // robot.kitRight(1);
+  // delay(1000);
+
+  // robot.ahead();
+  // testTCS();
+  // robot.setahead();
+  // robot.setSpeed(50);
+
+  // jeetson.getDetection();
+  // delay(300);
+  // testButton();
+  // robot.ahead();
+  // testMotors();
+  //testPIDWheel();
+
+  //pidTest();
+  // calibrateColors();
+  // robot.checkpointElection(); 
+  // robot.buttonPressed=false;
+  // testTCS();
+  // testLimits();
+  // testBnoY();
+  
+  // testVlxFrontDistance();
+  // testVlxFrontLeft();
+  // testVlxFrontRigth();
+  // testVlxRight();
+  // testVlxLeft();
+  // testVlxFront();
+  // testVlxBack();
+}
