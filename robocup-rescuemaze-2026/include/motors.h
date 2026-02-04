@@ -38,7 +38,7 @@ private:
     //wheels
     static constexpr float wheelDiameter=8.5;
     static constexpr float distancePerRev=wheelDiameter*PI;
-    static constexpr float kTicsPerRev=496.0;
+    static constexpr float kTicsPerRev=490.0; //496
     static constexpr float kTicsPerTile=30*kTicsPerRev/distancePerRev;
     //Pwm constants
     uint16_t kMinPwmRotate=70;
@@ -87,6 +87,7 @@ private:
     float servoPos=90;
     static constexpr uint16_t servoPosRight=133;
     static constexpr uint16_t servoPosLeft=50;
+    //initialized
 public:
     //objets
     Adafruit_VL53L0X lox = Adafruit_VL53L0X();
@@ -103,6 +104,8 @@ public:
     bool blackTile=false;
     bool blueTile=false;
     bool checkpoint=false;
+    bool innit =false;
+    
     uint8_t victim=0;
     uint8_t kitState=kitID::kNone;
     bool buttonPressed=false;
@@ -140,8 +143,6 @@ public:
     void resetOrientation();
     void resetVlx();
     //sensors
-    void checkTileColor();
-    void limitCrash();
     float nearWall();
     void passObstacle();
     bool isWall(uint8_t);
@@ -164,13 +165,10 @@ public:
     void resetTics();
     //ramp
     bool rampInFront();
-    bool isRamp();
-    void ramp();
+    //bool isRamp();
     //comunication
-    void wait(unsigned long);
     void wifiPrint(String,float);
     void screenBegin();
-    void screenPrint(String);
     void printSpeeds();
     void printAngle();
 };
