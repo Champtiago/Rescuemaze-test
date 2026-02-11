@@ -22,9 +22,8 @@ void testEncoders(){
     delay(1000);
 }
 void testButton(){
-
     String print=static_cast<String>(robot.buttonPressed);
-    robot.screenPrint(print);
+    //robot.screenPrint(print);
     Serial.println(print);
 }
 void testVlx(uint8_t id){
@@ -34,46 +33,46 @@ void testVlxFrontLeft(){
     float distance=robot.vlx[vlxID::frontLeft].getDistance();
     Serial.println(distance);
     String print=static_cast<String>(distance);
-    robot.screenPrint(print);
+    //robot.screenPrint(print);
 }
 void testVlxFrontRigth(){
     float distance=robot.vlx[vlxID::frontRight].getDistance();
     Serial.println(distance);
     String print=static_cast<String>(distance);
-    robot.screenPrint(print);
+    //robot.screenPrint(print);
 
 }
-void testVlxRight(){
-    float distance=robot.vlx[vlxID::right].getDistance();
+void testVlxRightUp(){
+    float distance=robot.vlx[vlxID::rightUp].getDistance();
     Serial.println(distance);
     String print=static_cast<String>(distance);
-    robot.screenPrint(print);
+    //robot.screenPrint(print);
 
 }
 void testVlxLeft(){
-    float distance=robot.vlx[vlxID::left].getDistance();
+    float distance=robot.vlx[vlxID::leftUp].getDistance();
     Serial.println(distance);
     String print=static_cast<String>(distance);
-    robot.screenPrint(print);
+    //robot.screenPrint(print);
 }
-void testVlxBack(){
-    float distance=robot.vlx[vlxID::back].getDistance();
+void testVlxrightDown(){
+    float distance=robot.vlx[vlxID::rightUp].getDistance();
     Serial.println(distance);
     String print=static_cast<String>(distance);
-    robot.screenPrint(print);
+    //robot.screenPrint(print);
 }
 void testVlxFront(){
-    float distance=robot.vlx[vlxID::front].getDistance();
+    float distance=robot.vlx[vlxID::frontRight].getDistance();
     Serial.println(distance);
     String print=static_cast<String>(distance);
-    robot.screenPrint(print);
+    //robot.screenPrint(print);
 }
 void testVlxFrontDistance(){
     robot.vlx[vlxID::frontLeft].getDistance();
     robot.vlx[vlxID::frontRight].getDistance();
     float frontDistance=(robot.vlx[vlxID::frontLeft].distance>robot.vlx[vlxID::frontRight].distance) ? robot.vlx[vlxID::frontLeft].distance:robot.vlx[vlxID::frontRight].distance;
     String print = static_cast<String>(frontDistance);
-    robot.screenPrint(print);
+    //robot.screenPrint(print);
     Serial.println(frontDistance);
 
 }
@@ -82,40 +81,40 @@ void  testMotors(){
     robot.setahead();
     delay(dt);
     Serial.println("BackRight");
-    robot.motor[MotorID::kBackRight].setSpeed(255);
+    robot.motor[MotorID::kBackRight].setSpeed(30);
     delay(dt);
     Serial.println("FrontRight");
-    robot.motor[MotorID::kFrontRight].setSpeed(255);
+    robot.motor[MotorID::kFrontRight].setSpeed(30);
     delay(dt);
     Serial.println("BackLeft");
-    robot.motor[MotorID::kBackLeft].setSpeed(255);
+    robot.motor[MotorID::kBackLeft].setSpeed(30);
     delay(dt);
     Serial.println("FrontLeft");
-    robot.motor[MotorID::kFrontLeft].setSpeed(255);
+    robot.motor[MotorID::kFrontLeft].setSpeed(30);
     delay(dt);
-    robot.setSpeed(0);
+    //robot.setSpeed(0);
+    while(1);
 }
 
 void testPIDWheel(){
     robot.setahead();
-
-    robot.PID_Wheel(4,MotorID::kFrontRight);
-
-    robot.motor[MotorID::kFrontLeft].setSpeed(0);
-    robot.PID_Wheel(15,MotorID::kFrontLeft);
-    robot.motor[MotorID::kBackLeft].setSpeed(0);
-
-
+    for (int i=0; i<4; i++){
+        robot.PID_Wheel(50,i);
+        delay(1000);
+        robot.PID_Wheel(255,i);
+        delay(1000);
+        robot.motor[i].setSpeed(0);
+    }
 }
 
 void testBnoY(){
     String print=static_cast<String>(robot.bno.getOrientationY());
-    robot.screenPrint(print);
+    //robot.screenPrint(print);
     Serial.println(print);
 }
-void calibrateColors(){
-    robot.calibrateColors();
-}
+//void calibrateColors(){
+    //robot.calibrateColors();
+//}
 void pidTest(){
     robot.setahead();
     robot.pidEncoders(20,true);

@@ -20,7 +20,6 @@ void MUX::selectChannel() {
     Wire.beginTransmission(MUX_ADDR);
     Wire.write(1 << tcaPos_);
     Wire.endTransmission();
-    delay(5);
 }
 
 void MUX::findI2C(const bool scan, const uint8_t address) {

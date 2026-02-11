@@ -5,11 +5,11 @@
 VLX::VLX() {}
 
 VLX::VLX(const uint8_t posMux) {
-    initialized = false;
     mux_.setNewChannel(posMux);
 }
 
 void VLX::begin() {
+    initialized = false;
     mux_.selectChannel();
     if (!VLX_.begin()) {
         Serial.println("Error initializing VL53L0X sensor.");
@@ -27,17 +27,16 @@ void VLX::setMux(const uint8_t posMux) {
 }
 
 void VLX::updateDistance() {
-
     mux_.selectChannel();
-    
+
     if (VLX_.isRangeComplete()) {
-        lastDistance = (float)(VLX_.readRange()) / 10.0f;
-    }
+        distance = (float)(VLX_.readRange()) / 10.0f;
+        }
 }
 
 float VLX::getDistance() {
     if (initialized) {
-        return lastDistance;
+        return distance;
     }
     else {
         return -1.0f;

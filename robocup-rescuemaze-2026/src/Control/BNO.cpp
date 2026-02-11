@@ -4,7 +4,7 @@ float angle;
 
 BNO::BNO() {
     this->event_ = {0};
-    this->bno_ = Adafruit_BNO055(sensorID, I2CAddress, &Wire1);
+    this->bno_ = Adafruit_BNO055(sensorID, I2CAddress, &Wire);
 }
 void BNO::setupBNO() {
     adafruit_bno055_opmode_t mode = OPERATION_MODE_IMUPLUS;
