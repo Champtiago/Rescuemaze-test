@@ -213,6 +213,8 @@ void VLXTaskPriority1(void *pv) {
   while (true) {
     // ⭐ Timeout en semáforo para evitar bloqueos permanentes
     if (xSemaphoreTake(i2cSemaphore, pdMS_TO_TICKS(100)) == pdTRUE) {
+      //tileColor=tcs_.getColor();
+
       for (uint8_t id : TaskVLX1) {
         // ⭐ VALIDACIÓN CRÍTICA: Verificar índice
         if (id >= Sensors_Amount) {
@@ -345,8 +347,9 @@ void RightHandNavigationTask(void *pv) {
 
 void loop() {
   //Serial.println(robot.motor[MotorID::kBackRight].tics);
-  robot.calibrateColors();
+  //robot.calibrateColors();
   checkTileColor();
+  delay(1000);
   /*
   robot.ahead();
   robot.smoothRotate(90);
