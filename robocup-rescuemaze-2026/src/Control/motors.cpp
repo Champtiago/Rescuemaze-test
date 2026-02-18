@@ -19,7 +19,6 @@ void motors::setupMotors(){
     CenterPID.changeConstants(kP_Center, kI_Center, kD_Center, CenterTime);
     Wire.begin(21, 22);
     Wire.setClock(400000);
-    delay(500); 
     bno.setupBNO();
     setupVlx(vlxID::leftUp);
     setupVlx(vlxID::frontRight);
@@ -27,11 +26,13 @@ void motors::setupMotors(){
     setupVlx(vlxID::frontLeft);
     //setupVlx(vlxID::leftDown);
     setupVlx(vlxID::back);
+    setupTCS();
     rampUpPID.changeConstants(kP_RampUp,kI_RampUp,kD_RampUp,rampTime);
     rampDownPID.changeConstants(kP_RampDown,kI_RampDown,kD_RampDown,rampTime);
     //bno.setupBNO();
 
     targetAngle=0;
+    delay(500); 
     innit = true;
 
 }
@@ -99,13 +100,13 @@ void motors::pidEncoders(int speedReference,bool ahead){
     // Serial.println(AngleError);
     Serial.println(AngleError);
     if(!ahead) AngleError=-AngleError;
-    selfCenteringError = PID_selfCenter();
-    selfCenteringError = constrain(selfCenteringError, -8, 8);//Holder values
+    //selfCenteringError = PID_selfCenter();
+    //selfCenteringError = constrain(selfCenteringError, -8, 8);//Holder values
 
-    PID_Wheel(speedReference+AngleError+selfCenteringError,MotorID::kFrontLeft);
-    PID_Wheel(speedReference+AngleError+selfCenteringError,MotorID::kBackLeft);
-    PID_Wheel(speedReference-AngleError-selfCenteringError,MotorID::kFrontRight);
-    PID_Wheel(speedReference-AngleError-selfCenteringError,MotorID::kBackRight);
+    PID_Wheel(speedReference+AngleError,MotorID::kFrontLeft);
+    PID_Wheel(speedReference+AngleError,MotorID::kBackLeft);
+    PID_Wheel(speedReference-AngleError,MotorID::kFrontRight);
+    PID_Wheel(speedReference-AngleError,MotorID::kBackRight);
 }
 
 
@@ -177,17 +178,18 @@ void motors::ahead(){
         }
     }
     slope=false;
-    stop();resetTics();//checkTileColor();
+    stop();
     resetTics();
-   
+    //checkTileColor();
 }
 
-/*
+
 void motors::checkTileColor(){
     tileColor=tcs_.getColor();
     Serial.println(tileColor);
     if(tileColor==kBlackColor && inMotion==true){
         inMotion=false;
+        stop();
         resetTics();
         setback();
         blackTile=true;
@@ -196,19 +198,21 @@ void motors::checkTileColor(){
             if(buttonPressed) break;
             int speed=map(getAvergeTics(),0,kTicsPerTile/2,kMaxSpeedFormard,kMinSpeedFormard);
             pidEncoders(speed,false);
-            screenPrint("Black Tile");
+            Serial.println("Black Tile");
+            //screenPrint("Black Tile");
         }
         stop();resetTics();
     }else if(tileColor==kBlueColor&&inMotion==false){
-        screenPrint("Blue Tile");
+        //screenPrint("Blue Tile");
+        Serial.println("Blue Tile");
         blueTile=true;
         wait(5500);
     }else if(tileColor==kCheckpointColor&&inMotion==false){
         checkpoint=true;
+        Serial.println("Checkpoint Tile");
         // screenPrint("Checkpoint Tile");
     }
 }
-*/
 
 float motors::nearWall(){
     //float left = AverageLeftDistance();
@@ -245,9 +249,9 @@ void motors::passObstacle(){
         }
         rotate(targetAngle-25);
     }
-    delay(300);
+    delay(200);
     moveDistance(kTileLength/5,false);
-    delay(300);
+    delay(200);
     targetAngle=targetAngle_;
     rotate(targetAngle);
     limitColition=false;
@@ -437,6 +441,38 @@ void motors::setleftTraslation(){
     motor[MotorID::kFrontRight].stop();
     // inMotion=true;
 }
+void motors::setrightCornerTraslation(){
+    motor[MotorID::kBackLeft].ahead();
+    motor[MotorID::kBackRight].stop();
+    motor[MotorID::kFrontLeft].ahead();
+    motor[MotorID::kFrontRight].ahead();
+    // inMotion=true;
+}
+
+void motors::setleftCornerTraslation(){
+    motor[MotorID::kBackLeft].stop();
+    motor[MotorID::kBackRight].ahead();
+    motor[MotorID::kFrontLeft].ahead();
+    motor[MotorID::kFrontRight].ahead();
+    // inMotion=true;
+}
+
+void motors::setrightCorner(){
+    motor[MotorID::kBackLeft].ahead();
+    motor[MotorID::kBackRight].back();
+    motor[MotorID::kFrontLeft].ahead();
+    motor[MotorID::kFrontRight].ahead();
+    // inMotion=true;
+}
+
+void motors::setleftCorner(){
+    motor[MotorID::kBackLeft].back();
+    motor[MotorID::kBackRight].ahead();
+    motor[MotorID::kFrontLeft].ahead();
+    motor[MotorID::kFrontRight].ahead();
+    // inMotion=true;
+}
+
 void motors::stop(){
     for(uint8_t i=0;i<4;i++){ 
         motor[i].stop();}
@@ -705,11 +741,205 @@ void motors::moveDistance(uint8_t targetDistance, bool ahead){
         }
     }
     resetTics();
-    stop(); 
+    //stop(); 
+}
+
+void motors::smoothRotate(float deltaAngle) {
+    float currentSpeed = kMaxSpeedFormard;
+
+    resetTics();
+    setahead();
+    while(getAvergeTics() < (kTicsPerTile)) {
+        if(buttonPressed) break;
+        float missingDistance=kTileLength-(getAvergeTics()*kTileLength/kTicsPerTile);
+        float speed=map(missingDistance,kTileLength,0,kMaxSpeedFormard,kMinSpeedFormard);
+        speed=constrain(speed,kMinSpeedFormard,kMaxSpeedFormard);
+        pidEncoders(speed, true);
+    }
+    stop();resetTics();
+    targetAngle=deltaAngle;
+    delayMicroseconds(1);
+    bno.getOrientationX();
+    float currentAngle,rightAngularDistance, leftAngularDistance,minInterval,maxInterval,tolerance=2;
+    bool hexadecimal;
+    //calculate angular distance in both directions
+    if(targetAngle>=angle){
+        rightAngularDistance=targetAngle-angle;
+        leftAngularDistance=angle+(360-targetAngle);
+    }else{
+        rightAngularDistance=(360-angle)+targetAngle;
+        leftAngularDistance=angle-targetAngle;
+    }
+    //define target interval and use angle or z_rotation
+    if(targetAngle!=360 && targetAngle!=0){ 
+        minInterval=(targetAngle-tolerance),maxInterval=(targetAngle+tolerance);
+        hexadecimal=true;
+    }else{
+        targetAngle=0;
+        minInterval=-tolerance,maxInterval=tolerance;
+        hexadecimal=false;
+    }
+    //decide shortest route and rotate
+    (rightAngularDistance<=leftAngularDistance) ? (limitColition ? setrightTraslation():setright()):(limitColition ? setleftTraslation():setleft());
+
+    currentAngle=hexadecimal ? angle:z_rotation;
+    
+    while(currentAngle<minInterval||currentAngle>maxInterval) {
+        if(buttonPressed) break;
+        bno.getOrientationX();
+        currentAngle=hexadecimal ? angle:z_rotation;
+        changeSpeedMove(false,true,0,false);
+    }
+    stop();resetTics();
+    setahead();
+    while(getAvergeTics() < (kTicsPerTile)) {
+        if(buttonPressed) break;
+        currentSpeed = map(getAvergeTics(), 0, (kTicsPerTile), 
+                          kMinSpeedFormard, kMaxSpeedFormard);
+        pidEncoders(currentSpeed, true);
+    }
+    stop();resetTics();
+}
+
+void motors::corner(float deltaAngle){
+    passObstacle();
+    nearWall();
+    resetTics();
+    int offset=0;
+    int turnDirection;
+    float distance;
+    float tilepercentage=2.0/3.0;
+    float maxInterpolation = 0.15;
+    float minInterpolation = 0.03;
+    float TurnSpeed;
+    bool encoder,frontVlx;
+    bool rampCaution=false;
+    float frontDistance=vlx[vlxID::frontRight].getDistance();
+    float backDistance;
+    if(frontDistance<maxVlxDistance && frontDistance>=1){
+        distance=frontDistance*tilepercentage;
+        encoder=false;
+        frontVlx=true;
+    }else{ 
+        backDistance=vlx[vlxID::back].getDistance();
+        if((backDistance<maxVlxDistance-kTileLength)&& frontDistance>=1){
+            distance=backDistance*tilepercentage;
+            encoder=false;
+            frontVlx=false;
+        }else encoder=true;
+    }
+
+    String print=static_cast<String>(frontDistance);
+    //robot.screenPrint(print);
+    //if(frontDistance>300) rampCaution=true;
+    if(abs(bno.getOrientationY())>4 ){
+        encoder=true;offset=kTicsPerTile/6;
+    } 
+    if(!encoder){
+        float targetDistance=findNearest(distance,frontVlx ? targetDistances:targetDistancesB,2,frontVlx);
+        targetDistance=targetDistance;
+        while(frontVlx ? (distance>=targetDistance):(distance<=targetDistance)){//poner rango
+            setahead();
+            //checkTileColor();
+            if(blackTile) break;
+            if(buttonPressed) break;
+            //if(isRamp()) break;
+            //limitCrash();
+            distance=(frontVlx ? vlx[vlxID::frontRight].getDistance():vlx[vlxID::back].getDistance());
+            float missingDistance=abs(distance-targetDistance);
+            float speed;
+            speed=map(missingDistance,kTileLength,0,kMaxSpeedFormard,kMinSpeedFormard);
+            if(slope==true){
+                missingDistance=kTileLength-(getAvergeTics()*kTileLength/kTicsPerTile);
+                speed=map(missingDistance,kTileLength,0,kMaxSpeedFormard,kMinSpeedFormard);
+                if(getAvergeTics()>kTicsPerTile) break;
+            }
+            //if(rampCaution) speed=map(missingDistance,kTileLength,0,(kMaxSpeedFormard/3),kMinSpeedFormard);
+            speed=constrain(speed,kMinSpeedFormard,kMaxSpeedFormard);
+            pidEncoders(speed,true);
+        }
+    }else if(encoder){
+        while(getAvergeTics()<(kTicsPerTile*tilepercentage-offset)){
+            setahead();
+            // limitCrash();
+            //checkTileColor();
+            if(blackTile) return;
+            if(buttonPressed) break;
+            //if(isRamp()) break;
+            float missingDistance=kTileLength-(getAvergeTics()*kTileLength/kTicsPerTile);
+            float speed=map(missingDistance,kTileLength,0,kMaxSpeedFormard,kMinSpeedFormard);
+            speed=constrain(speed,kMinSpeedFormard,kMaxSpeedFormard);
+            //if(rampCaution) speed=map(missingDistance,kTileLength,0,(kMaxSpeedFormard/3),kMinSpeedFormard);
+            pidEncoders(speed,true);
+        }
+    }
+    slope=false;
+    stop();
+    resetTics();
+    delayMicroseconds(1);
+    bno.getOrientationX();
+    float currentAngle,rightAngularDistance, leftAngularDistance,minInterval,maxInterval,tolerance=2;
+    bool hexadecimal;
+    //calculate angular distance in both directions
+    if(targetAngle>=angle){
+        rightAngularDistance=targetAngle-angle;
+        leftAngularDistance=angle+(360-targetAngle);
+    }else{
+        rightAngularDistance=(360-angle)+targetAngle;
+        leftAngularDistance=angle-targetAngle;
+    }
+    //define target interval and use angle or z_rotation
+    if(targetAngle!=360 && targetAngle!=0){ 
+        minInterval=(targetAngle-tolerance),maxInterval=(targetAngle+tolerance);
+        hexadecimal=true;
+    }else{
+        targetAngle=0;
+        minInterval=-tolerance,maxInterval=tolerance;
+        hexadecimal=false;
+    }
+    //decide shortest route and rotate
+    (rightAngularDistance<=leftAngularDistance) ? (turnDirection = 1):(turnDirection = -1);
+    setahead();
+    currentAngle=hexadecimal ? angle:z_rotation;
+    while(true){
+        if(buttonPressed) break;
+        if(currentAngle >= minInterval && currentAngle <= maxInterval) break;
+        if(getCurrentBackDistance() >= kTileLength/3) break;
+        bno.getOrientationX();
+        currentAngle = hexadecimal ? angle : z_rotation;
+        float missingDistance = kTileLength - (getAverageBackTics() * kTileLength / kTicsPerTile);
+        float speed = map(missingDistance, kTileLength, 0, kMaxSpeedFormard, kMinSpeedFormard);
+        speed = constrain(speed, kMinSpeedFormard, kMaxSpeedFormard);
+        float angleError;
+        if(hexadecimal) angleError = abs(targetAngle - angle);
+        else angleError = abs(z_rotation);
+        float interpolation = map(angleError, 0, 90, minInterpolation, maxInterpolation);
+        interpolation = constrain(interpolation, minInterpolation, maxInterpolation);
+        TurnSpeed = speed * interpolation * turnDirection;
+        PID_Wheel(speed + TurnSpeed, MotorID::kFrontLeft);
+        PID_Wheel(speed - TurnSpeed, MotorID::kFrontRight);
+        PID_Wheel(speed, MotorID::kBackLeft);
+        PID_Wheel(speed, MotorID::kBackRight);
+    }
+    stop();
+    rotate(deltaAngle);
+    stop();resetTics();
 }
 
 float motors::getCurrentDistanceCm(){
     return getAvergeTics()*kTileLength/kTicsPerTile;
+}
+
+double getAverageBackTics(){
+    int totalTics = 1;
+    //totalTics+=motor[MotorID::kBackRight].getTics();
+    //totalTics+=motor[MotorID::kBackLeft].getTics();
+    return totalTics / 2.0;
+}
+
+
+float motors::getCurrentBackDistance(){
+    return getAverageBackTics()*kTileLength/kTicsPerTile;
 }
 
 float motors::getAngleOrientation(){
@@ -832,12 +1062,6 @@ void motors::reloadKits(){
     writeServo(90);
 }
 
-void motors::setupTCS() {
-    tcs_.setMux(Pins::tcsPins[0]);
-    tcs_.init();
-    bno.setPhaseCorrection(bno.getOrientationX());
-    bno.setPhaseCorrectionY(bno.getOrientationY());
-}
 void motors::wait(unsigned long targetTime){
     unsigned long initialTime=millis();
     while((millis()-initialTime)<targetTime){
@@ -861,17 +1085,35 @@ void motors::screenPrint(String output){
     display.println(output);
     display.display();
 }
+*/
+void motors::wait(unsigned long targetTime){
+    unsigned long initialTime=millis();
+    while((millis()-initialTime)<targetTime){
+        if(buttonPressed) break;
+    }
+}
+
+void motors::setupTCS() {
+    tcs_.setMux(Pins::tcsPins[0]);
+    tcs_.init();
+    bno.setPhaseCorrection(bno.getOrientationX());
+    bno.setPhaseCorrectionY(bno.getOrientationY());
+}
+
+  
 void motors::calibrateColors(){
-    uint16_t dt=5000;
-    screenPrint("Blue Tile");
-    delay(2000);
+    uint16_t dt=10000;
+    //screenPrint("Blue Tile");
+    Serial.println("Blue Tile");
+    delay(dt);
     tcs_.updateRGBC();
     tcs_.printRGB();
     float redInBlue=tcs_.red_;
     float greenInBlue=tcs_.green_;
     float blueInBlue=tcs_.blue_;
 
-    screenPrint("Black Tile");
+    //screenPrint("Black Tile");
+    Serial.println("Black Tile");
     delay(dt);
     tcs_.updateRGBC();
     tcs_.printRGB();
@@ -879,7 +1121,8 @@ void motors::calibrateColors(){
     float greenInBlack=tcs_.green_;
     float blueInBlack=tcs_.blue_;
 
-    screenPrint("Checkpoint Tile");
+    //screenPrint("Checkpoint Tile");
+    Serial.println("Checkpoint Tile");
     delay(dt);
     tcs_.updateRGBC();
     tcs_.printRGB();
@@ -887,7 +1130,8 @@ void motors::calibrateColors(){
     float greenInCheck=tcs_.green_;
     float blueInCheck=tcs_.blue_;
 
-    screenPrint("white Tile");
+    //screenPrint("white Tile");
+    Serial.println("White Tile");
     delay(dt);
     tcs_.updateRGBC();
     tcs_.printRGB();
@@ -899,29 +1143,31 @@ void motors::calibrateColors(){
         if(buttonPressed) break;
         String print;
         dt=2000;
-        screenPrint("RGB Blue");
+        Serial.print("RGB Blue");
         delay(800);
         print=static_cast<String>(redInBlue)+","+static_cast<String>(greenInBlue)+","+static_cast<String>(blueInBlue);
-        screenPrint(print);
+        Serial.println(print);
         delay(dt);
 
-        screenPrint("RGB Black");
+        //screenPrint("RGB Black");
+        Serial.print("RGB Black");
         delay(800);
         print=static_cast<String>(redInBlack)+","+static_cast<String>(greenInBlack)+","+static_cast<String>(blueInBlack);
-        screenPrint(print);
+        Serial.println(print);
         delay(dt);
 
-        screenPrint("RGB Check");
+        //screenPrint("RGB Check");
+        Serial.print("RGB Checkpoint");
         delay(800);
         print=static_cast<String>(redInCheck)+","+static_cast<String>(greenInCheck)+","+static_cast<String>(blueInCheck);
-        screenPrint(print);
+        Serial.println(print);
         delay(dt);
 
-        screenPrint("RGB white");
+        //screenPrint("RGB white");
+        Serial.print("RGB White");
         delay(800);
         print=static_cast<String>(redInWhite)+","+static_cast<String>(greenInWhite)+","+static_cast<String>(blueInWhite);
-        screenPrint(print);
+        Serial.println(print);
         delay(dt);
     }
 }
-*/

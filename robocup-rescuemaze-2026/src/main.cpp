@@ -3,7 +3,7 @@
 #include "Encoder.h"
 #include "Test.h"
 
-constexpr uint8_t Sensors_Amount=4;
+constexpr uint8_t Sensors_Amount=8;
 static constexpr uint32_t vDelay = 33;
 SemaphoreHandle_t i2cSemaphore;
 
@@ -48,7 +48,8 @@ void setup() {
 }
 
 void loop() {
-  //testEncoders();
+  testMotors();
+    //testEncoders();
   //testPIDWheel();
   // // robot.leds.sequency();
 

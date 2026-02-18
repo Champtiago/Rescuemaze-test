@@ -5,6 +5,7 @@
 #include "PID.H"
 #include "VLX.h"
 #include "BNO.H"
+#include "TCS.h"
 #include <SPI.h>
 #include <ESP32Servo.h>
 
@@ -24,7 +25,6 @@ constexpr uint8_t rulet[4][4]={{0,1,2,3},{3,0,1,2},{2,3,0,1},{1,2,3,0}};
 constexpr uint8_t targetDistances[]={edgeTileDistance+2,kTileLength+edgeTileDistance+2};
 constexpr uint8_t targetDistancesB[]={kTileLength+edgeTileDistance-2,2*kTileLength+edgeTileDistance-2};
 
-
 class motors{
 private:
     float targetAngle=0;
@@ -36,9 +36,9 @@ private:
     static constexpr uint8_t brakingDis=2;
     static constexpr uint8_t kDistanceToWall=15;
     //wheels
-    static constexpr float wheelDiameter=8.3;
+    static constexpr float wheelDiameter=6.8;
     static constexpr float distancePerRev=wheelDiameter*PI;
-    static constexpr float kTicsPerRev=500; //496
+    static constexpr float kTicsPerRev=496; //496
     static constexpr float kTicsPerTile=30*kTicsPerRev/distancePerRev;
     //Pwm constants
     uint16_t kMinPwmRotate=70;
@@ -47,7 +47,7 @@ private:
     uint16_t kMaxPwmFormard=180;
     //Speeds constants
     static constexpr uint16_t kMinSpeedRotate=7;
-    static constexpr uint16_t kMaxSpeedRotate=20;
+    static constexpr uint16_t kMaxSpeedRotate=27;
     static constexpr uint16_t kMinSpeedFormard=5;
     static constexpr uint16_t kMaxSpeedFormard=40;
     static constexpr uint16_t kSpeedRampUp=20;
@@ -100,11 +100,10 @@ public:
     //objets
     Adafruit_VL53L0X lox = Adafruit_VL53L0X();
     BNO bno;
-   
+    TCS tcs_;
     VLX vlx[kNumVlx];
     Servo servo;
     Motor motor[4];
-
     //public variables
     bool sameOrientation=false;
     unsigned long buttonTime=millis();
@@ -135,6 +134,10 @@ public:
     void setright();
     void setleftTraslation();
     void setrightTraslation();
+    void setrightCornerTraslation();
+    void setleftCornerTraslation();
+    void setrightCorner();
+    void setleftCorner();
     void stop();
     void calibrateColors();
     void victimSequency();
@@ -144,7 +147,10 @@ public:
     void left();
     void right();  
     void rotate(float);  
-    void moveDistance(uint8_t targetDistance,bool);
+    void smoothRotate(float);
+    void corner(float);
+    void wait(unsigned long targetTime);
+    void moveDistance(uint8_t targetDistance, bool);
     void writeServo(uint16_t servoAngle);
     //setups
     void setupTCS();
@@ -155,6 +161,7 @@ public:
     float nearWall();
     void passObstacle();
     bool isWall(uint8_t);
+    void checkTileColor();
     //float AverageRightDistance();
     //float AverageLeftDistance();
     //victims
@@ -168,6 +175,8 @@ public:
     float getCurrentDistanceCm();
     float getAngleOrientation();
     double getAvergeTics();
+    double getAverageBackTics();
+    float getCurrentBackDistance();
     double getTicsSpeed();
     //logic
     void checkpointElection();
