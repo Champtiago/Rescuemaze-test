@@ -583,6 +583,7 @@ bool motors::isWall(uint8_t direction){
     switch(realPos) {
         bool wall1,wall2,wall3,wall4;
         case 0:
+            // Use frontLeft as forward proxy since there is no dedicated front sensor
             wall1=vlx[vlxID::frontRight].isWall();
             return wall1;
         case 1:
