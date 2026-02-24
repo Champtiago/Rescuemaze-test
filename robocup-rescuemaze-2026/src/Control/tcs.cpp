@@ -19,7 +19,10 @@ void TCS::init() {
             #endif
         }
         
-    }Serial.println("TCS inicializado");
+    }
+    Serial.println("TCS inicializado");
+    tcs_.setInterrupt(true);
+
 }
 
 void TCS::setDefaultValues() {
@@ -42,21 +45,25 @@ void TCS::updateRGBC() {
     uint16_t blueR;
     uint16_t clearR;
     mux_.selectChannel();
-    tcs_.setInterrupt(false);
+    tcs_.setInterrupt(true);
     delay(millisToWait_);
     tcs_.getRawData(&redR, &greenR, &blueR, &clearR);
     red_ = redR;
     green_ = greenR;
     blue_ = blueR;
     clear_= clearR;
-    tcs_.setInterrupt(true);
 }
 
 void TCS::printRGB() {
     // updateRGBC();
+    Serial.println("TCS red:");
     Serial.println(red_);
+    Serial.println("TCS green:");
     Serial.println(green_);
+    Serial.println("TCS blue:");
     Serial.println(blue_);
+    Serial.println("TCS clear:");
+    Serial.println(clear_);
 }
 
 void TCS::printRGBC() {
@@ -98,11 +105,12 @@ char TCS::getColor() {
         #if DEBUG_TCS
         customPrintln("black");
         #endif
-    } else if (red_ > kMinRedValueInCheckpoint_ && green_ > kMinGreenValueInCheckpoint_ && blue_ > kMinBlueValueInCheckpoint_ && red_ < kMaxRedValueInCheckpoint_ && green_ < kMaxGreenValueInCheckpoint_ && blue_ < kMaxBlueValueInCheckpoint_) { // adc < kMinPhotoresistorValue_ || adc > kMaxPhotoresistorValue_
+    } else if (clear_ > kMinCheckpointClear && clear_ < kMaxCheckpointClear) {
         colorLetter = kCheckpointColor_;
         #if DEBUG_TCS
         customPrintln("checkpoint");
         #endif
+        // customPrintln("clear");
     } else {
         colorLetter = kUndefinedColor_;
         #if DEBUG_TCS
@@ -112,7 +120,10 @@ char TCS::getColor() {
     #if DEBUG_TCS
     customPrint("colorLetter: "); customPrintln(colorLetter);
     #endif
-    
+    Serial.println(red_);
+    Serial.println(green_);
+    Serial.println(blue_);
+    Serial.println(clear_);
     return colorLetter;
 }
 

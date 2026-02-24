@@ -19,6 +19,8 @@ void motors::setupMotors(){
     CenterPID.changeConstants(kP_Center, kI_Center, kD_Center, CenterTime);
     Wire.begin(21, 22);
     Wire.setClock(400000);
+    //screenBegin();
+    //screenPrint("r");
     bno.setupBNO();
     setupVlx(vlxID::leftUp);
     setupVlx(vlxID::frontRight);
@@ -26,11 +28,11 @@ void motors::setupMotors(){
     setupVlx(vlxID::frontLeft);
     //setupVlx(vlxID::leftDown);
     setupVlx(vlxID::back);
-    setupTCS();
+    //setupTCS();
     rampUpPID.changeConstants(kP_RampUp,kI_RampUp,kD_RampUp,rampTime);
     rampDownPID.changeConstants(kP_RampDown,kI_RampDown,kD_RampDown,rampTime);
     //bno.setupBNO();
-
+    
     targetAngle=0;
     delay(500); 
     innit = true;
@@ -96,7 +98,7 @@ void motors::pidEncoders(int speedReference,bool ahead){
     PID pidBno(0.5,0.1,0.01,1);
     if(rampState!=0) changeAngle=0;
     float AngleError=pidBno.calculate_PID(targetAngle+changeAngle,(targetAngle==0 ? z_rotation:angle));
-    AngleError=constrain(AngleError,-8,8);
+    AngleError=constrain(AngleError,-17,17);
     // Serial.println(AngleError);
     Serial.println(AngleError);
     if(!ahead) AngleError=-AngleError;
@@ -136,7 +138,7 @@ void motors::ahead(){
     String print=static_cast<String>(frontDistance);
     //robot.screenPrint(print);
     if(frontDistance>300) rampCaution=true;
-    if(abs(bno.getOrientationY())>4 ){
+    if(abs(bno.getOrientationY())>15 ){
         encoder=true;offset=kTicsPerTile/6;
     } 
     if(!encoder){
@@ -185,7 +187,7 @@ void motors::ahead(){
 
 
 void motors::checkTileColor(){
-    tileColor=tcs_.getColor();
+    char tileColor=tcs_.getColor();
     Serial.println(tileColor);
     if(tileColor==kBlackColor && inMotion==true){
         inMotion=false;
@@ -1073,18 +1075,7 @@ void motors::wifiPrint(String message, float i){
     // client.println(i);
     // Serial.println("Enviado: ");
 }
-void motors::screenBegin(){
-    display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
-    Serial.println("Pantalla inicializada");
-}
-void motors::screenPrint(String output){
-    display.clearDisplay();
-    display.setTextSize(2);
-    display.setTextColor(WHITE);
-    display.setCursor(0, 10);
-    display.println(output);
-    display.display();
-}
+
 */
 void motors::wait(unsigned long targetTime){
     unsigned long initialTime=millis();
@@ -1100,6 +1091,18 @@ void motors::setupTCS() {
     bno.setPhaseCorrectionY(bno.getOrientationY());
 }
 
+void motors::screenBegin(){
+    display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
+    Serial.println("Pantalla inicializada");
+}
+void motors::screenPrint(String output){
+    display.clearDisplay();
+    display.setTextSize(2);
+    display.setTextColor(WHITE);
+    display.setCursor(0, 10);
+    display.println(output);
+    display.display();
+}
   
 void motors::calibrateColors(){
     uint16_t dt=10000;
@@ -1129,6 +1132,7 @@ void motors::calibrateColors(){
     float redInCheck=tcs_.red_;
     float greenInCheck=tcs_.green_;
     float blueInCheck=tcs_.blue_;
+    float clearInCheck=tcs_.clear_;
 
     //screenPrint("white Tile");
     Serial.println("White Tile");
