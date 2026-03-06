@@ -232,17 +232,21 @@ void VLXTaskPriority2(void *pv) {
   // ⭐ Delay inicial
   while (true) {
     // ⭐ Timeout en semáforo
-    if (xSemaphoreTake(i2cSemaphore, pdMS_TO_TICKS(100)) == pdTRUE) {
-      for (uint8_t id : TaskVLX2) {
+    if (xSemaphoreTake(i2cSemaphore, pdMS_TO_TICKS(10)) == pdTRUE) {
+    for (uint8_t id : TaskVLX2) {
         robot.vlx[id].updateDistance();
-        xSemaphoreGive(i2cSemaphore);
+    }
+    robot.tcs_.startIntegration();
+    xSemaphoreGive(i2cSemaphore);
+    }
+
+    vTaskDelay(pdMS_TO_TICKS(170));
+
+    if (xSemaphoreTake(i2cSemaphore, pdMS_TO_TICKS(10)) == pdTRUE) {
         robot.tcs_.updateRGBC();
         xSemaphoreGive(i2cSemaphore);
-        //robot.tcs_.printRGB();
-      }
-    } else {
-      Serial.println("WARN: VLXTask2 timeout en semáforo");
     }
+    
     vTaskDelay(pdMS_TO_TICKS(vDelay));
   }
 }
@@ -334,7 +338,11 @@ void loop() {
  //Serial.println(robot.vlx[vlxID::frontRight].getDistance());
   //Serial.println(robot.vlx[vlxID::frontLeft].getDistance());
   //delay(200);
-  m.run_algs();
+  //robot.calibrateColors();
+  //Serial.println(robot.vlx[vlxID::back].getDistance());
+  //testMotors();
+  robot.ahead();
+  //m.run_algs();
   //robot.calibrateColors();
   //while(true) vTaskDelay(pdMS_TO_TICKS(1000));
   //Serial.println(robot.motor[MotorID::kBackLeft].tics);

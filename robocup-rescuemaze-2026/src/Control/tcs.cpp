@@ -25,6 +25,11 @@ void TCS::init() {
 
 }
 
+void TCS::startIntegration() {
+    mux_.selectChannel();
+    tcs_.setInterrupt(false);
+}
+
 void TCS::setDefaultValues() {
     red_ = 0;
     green_ = 0;
@@ -38,18 +43,9 @@ void TCS::updateRGB() {
 }
 
 void TCS::updateRGBC() {
-    uint16_t redR;
-    uint16_t greenR;
-    uint16_t blueR;
-    uint16_t clearR;
-    mux_.selectChannel();
-    tcs_.setInterrupt(false);
-    delay(millisToWait_);
+    uint16_t redR, greenR, blueR, clearR;
     tcs_.getRawData(&redR, &greenR, &blueR, &clearR);
-    red_ = redR;
-    green_ = greenR;
-    blue_ = blueR;
-    clear_= clearR;
+    red_ = redR; green_ = greenR; blue_ = blueR; clear_ = clearR;
 }
 
 void TCS::printRGB() {

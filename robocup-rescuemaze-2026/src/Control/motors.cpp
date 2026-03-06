@@ -152,7 +152,7 @@ void motors::ahead(){
             checkTileColor();
             if(blackTile) break;
             if(buttonPressed) break;
-            if(isRamp()) break;
+            if(isRamp()) brake(); break;
             limitCrash();
             distance=(frontVlx ? vlx[vlxID::frontRight].getDistance():vlx[vlxID::back].getDistance());
             float missingDistance=abs(distance-targetDistance);
@@ -174,7 +174,7 @@ void motors::ahead(){
             checkTileColor();
             if(blackTile) return;
             if(buttonPressed) break;
-            if(isRamp()) break;
+            if(isRamp()) brake(); break;
             float missingDistance=kTileLength-(getAvergeTics()*kTileLength/kTicsPerTile);
             float speed=map(missingDistance,kTileLength,0,kMaxSpeedFormard,kMinSpeedFormard);
             speed=constrain(speed,kMinSpeedFormard,kMaxSpeedFormard);
@@ -183,7 +183,7 @@ void motors::ahead(){
         }
     }
     slope=false;
-    brake();
+    stop();
     resetTics();
     delay(100);
     checkTileColor();

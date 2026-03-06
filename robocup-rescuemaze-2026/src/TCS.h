@@ -12,29 +12,29 @@ constexpr uint8_t blackThreshold=40;
 
 class TCS {
     private:
-        Adafruit_TCS34725 tcs_ = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X);
+        Adafruit_TCS34725 tcs_ = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_154MS, TCS34725_GAIN_4X);
         MUX mux_;
 
-        static constexpr int8_t millisToWait_ = 60;
+        static constexpr int8_t millisToWait_ = 170;
 
         //BLUE TILE
-        static constexpr float kRedValueInBlue_ = 40;
-        static constexpr float kGreenValueInBlue_ = 50;
-        static constexpr float kBlueValueInBlue_ = 66;
+        static constexpr float kRedValueInBlue_ = 197;
+        static constexpr float kGreenValueInBlue_ = 230;
+        static constexpr float kBlueValueInBlue_ = 272;
 
         //BLACK TILE
-        static constexpr float kRedValueInBlack_ = 30.00;
-        static constexpr float kGreenValueInBlack_ = 20.00;
-        static constexpr float kBlueValueInBlack_ = 20.00;
+        static constexpr float kRedValueInBlack_ = 92.00;
+        static constexpr float kGreenValueInBlack_ = 75.00;
+        static constexpr float kBlueValueInBlack_ = 51.00;
 
         //CHECKPOINT TILE
         static constexpr float kRedValueInCheckpoint_ = 308.00;
         static constexpr float kGreenValueInCheckpoint_ = 330.00;
         static constexpr float kBlueValueInCheckpoint_ = 325.00;
-        static constexpr float kClearValueInCheckpoint_ = 520.00;
+        static constexpr float kClearValueInCheckpoint_ = 1279.00;
 
-        static constexpr uint8_t rgbThreshold=25;
-        static constexpr uint8_t CheckpointThreshold=50;
+        static constexpr uint8_t rgbThreshold=80;
+        static constexpr float CheckpointThreshold=400;
         static constexpr float kCheckpointClearThreshold=100;
         
 
@@ -108,6 +108,8 @@ class TCS {
         void updateRGBC();
 
         char getColor();
+
+        void startIntegration();
 
 };
 
