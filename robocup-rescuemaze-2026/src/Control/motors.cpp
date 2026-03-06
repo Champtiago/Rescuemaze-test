@@ -693,15 +693,15 @@ void motors::ramp(){
         screenPrint("rampDown");
     }
     if(getAvergeTics()>1*kTicsPerTile && rampState==1){
-        // stop();
-        // bno.resetOrientationX();
-        // setahead();
+        stop();
+        bno.resetOrientationX();
+        setahead();
         moveDistance(kTileLength/3,true);
         rotate(targetAngle);
     }else if(getAvergeTics()>0.8*kTicsPerTile && rampState==2){
-        // stop();
-        // bno.resetOrientationX();
-        // setahead();
+        stop();
+        bno.resetOrientationX();
+        setahead();
         moveDistance(kTileLength/2,true);
         rotate(targetAngle);
     }else{
@@ -779,145 +779,9 @@ void motors::smoothRotate(float deltaAngle) {
     stop();resetTics();
 }
 
-void motors::corner(float deltaAngle){
-    passObstacle();
-    nearWall();
-    resetTics();
-    int offset=0;
-    int turnDirection;
-    float distance;
-    float tilepercentage=2.0/3.0;
-    float maxInterpolation = 0.15;
-    float minInterpolation = 0.03;
-    float TurnSpeed;
-    bool encoder,frontVlx;
-    bool rampCaution=false;
-    float frontDistance=vlx[vlxID::frontRight].getDistance();
-    float backDistance;
-    if(frontDistance<maxVlxDistance && frontDistance>=1){
-        distance=frontDistance*tilepercentage;
-        encoder=false;
-        frontVlx=true;
-    }else{ 
-        backDistance=vlx[vlxID::back].getDistance();
-        if((backDistance<maxVlxDistance-kTileLength)&& frontDistance>=1){
-            distance=backDistance*tilepercentage;
-            encoder=false;
-            frontVlx=false;
-        }else encoder=true;
-    }
-
-    String print=static_cast<String>(frontDistance);
-    //robot.screenPrint(print);
-    //if(frontDistance>300) rampCaution=true;
-    if(abs(bno.getOrientationY())>4 ){
-        encoder=true;offset=kTicsPerTile/6;
-    } 
-    if(!encoder){
-        float targetDistance=findNearest(distance,frontVlx ? targetDistances:targetDistancesB,2,frontVlx);
-        targetDistance=targetDistance;
-        while(frontVlx ? (distance>=targetDistance):(distance<=targetDistance)){//poner rango
-            setahead();
-            //checkTileColor();
-            if(blackTile) break;
-            if(buttonPressed) break;
-            //if(isRamp()) break;
-            //limitCrash();
-            distance=(frontVlx ? vlx[vlxID::frontRight].getDistance():vlx[vlxID::back].getDistance());
-            float missingDistance=abs(distance-targetDistance);
-            float speed;
-            speed=map(missingDistance,kTileLength,0,kMaxSpeedFormard,kMinSpeedFormard);
-            if(slope==true){
-                missingDistance=kTileLength-(getAvergeTics()*kTileLength/kTicsPerTile);
-                speed=map(missingDistance,kTileLength,0,kMaxSpeedFormard,kMinSpeedFormard);
-                if(getAvergeTics()>kTicsPerTile) break;
-            }
-            //if(rampCaution) speed=map(missingDistance,kTileLength,0,(kMaxSpeedFormard/3),kMinSpeedFormard);
-            speed=constrain(speed,kMinSpeedFormard,kMaxSpeedFormard);
-            pidEncoders(speed,true);
-        }
-    }else if(encoder){
-        while(getAvergeTics()<(kTicsPerTile*tilepercentage-offset)){
-            setahead();
-            // limitCrash();
-            //checkTileColor();
-            if(blackTile) return;
-            if(buttonPressed) break;
-            //if(isRamp()) break;
-            float missingDistance=kTileLength-(getAvergeTics()*kTileLength/kTicsPerTile);
-            float speed=map(missingDistance,kTileLength,0,kMaxSpeedFormard,kMinSpeedFormard);
-            speed=constrain(speed,kMinSpeedFormard,kMaxSpeedFormard);
-            //if(rampCaution) speed=map(missingDistance,kTileLength,0,(kMaxSpeedFormard/3),kMinSpeedFormard);
-            pidEncoders(speed,true);
-        }
-    }
-    slope=false;
-    stop();
-    resetTics();
-    delayMicroseconds(1);
-    bno.getOrientationX();
-    float currentAngle,rightAngularDistance, leftAngularDistance,minInterval,maxInterval,tolerance=2;
-    bool hexadecimal;
-    //calculate angular distance in both directions
-    if(targetAngle>=angle){
-        rightAngularDistance=targetAngle-angle;
-        leftAngularDistance=angle+(360-targetAngle);
-    }else{
-        rightAngularDistance=(360-angle)+targetAngle;
-        leftAngularDistance=angle-targetAngle;
-    }
-    //define target interval and use angle or z_rotation
-    if(targetAngle!=360 && targetAngle!=0){ 
-        minInterval=(targetAngle-tolerance),maxInterval=(targetAngle+tolerance);
-        hexadecimal=true;
-    }else{
-        targetAngle=0;
-        minInterval=-tolerance,maxInterval=tolerance;
-        hexadecimal=false;
-    }
-    //decide shortest route and rotate
-    (rightAngularDistance<=leftAngularDistance) ? (turnDirection = 1):(turnDirection = -1);
-    setahead();
-    currentAngle=hexadecimal ? angle:z_rotation;
-    while(true){
-        if(buttonPressed) break;
-        if(currentAngle >= minInterval && currentAngle <= maxInterval) break;
-        if(getCurrentBackDistance() >= kTileLength/3) break;
-        bno.getOrientationX();
-        currentAngle = hexadecimal ? angle : z_rotation;
-        float missingDistance = kTileLength - (getAverageBackTics() * kTileLength / kTicsPerTile);
-        float speed = map(missingDistance, kTileLength, 0, kMaxSpeedFormard, kMinSpeedFormard);
-        speed = constrain(speed, kMinSpeedFormard, kMaxSpeedFormard);
-        float angleError;
-        if(hexadecimal) angleError = abs(targetAngle - angle);
-        else angleError = abs(z_rotation);
-        float interpolation = map(angleError, 0, 90, minInterpolation, maxInterpolation);
-        interpolation = constrain(interpolation, minInterpolation, maxInterpolation);
-        TurnSpeed = speed * interpolation * turnDirection;
-        PID_Wheel(speed + TurnSpeed, MotorID::kFrontLeft);
-        PID_Wheel(speed - TurnSpeed, MotorID::kFrontRight);
-        PID_Wheel(speed, MotorID::kBackLeft);
-        PID_Wheel(speed, MotorID::kBackRight);
-    }
-    stop();
-    rotate(deltaAngle);
-    stop();resetTics();
-}
 
 float motors::getCurrentDistanceCm(){
     return getAvergeTics()*kTileLength/kTicsPerTile;
-}
-
-double getAverageBackTics(){
-    int totalTics = 1;
-    //totalTics+=motor[MotorID::kBackRight].getTics();
-    //totalTics+=motor[MotorID::kBackLeft].getTics();
-    return totalTics / 2.0;
-}
-
-
-float motors::getCurrentBackDistance(){
-    return getAverageBackTics()*kTileLength/kTicsPerTile;
 }
 
 float motors::getAngleOrientation(){

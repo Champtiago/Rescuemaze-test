@@ -74,17 +74,6 @@ namespace vlxID{
 
 }
 
-/*
-constexpr uint8_t TaskVLX1[2]{ 
-    //vlxID::frontCenter, 
-    //vlxID::front, 
-    //vlxID::frontRight, 
-    //vlxID::frontLeft 
-    vlxID::frontLeft,
-    //vlxID::front,  
-    vlxID::frontRight,
-};
-*/
 
 constexpr uint8_t TaskVLX2[5]{
     vlxID::rightUp,
