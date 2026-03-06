@@ -148,7 +148,7 @@ void maze::dijkstra(coord& start, coord& end, arrCustom<coord>& tilesMap, arrCus
 
     uint8_t minDist;
     coord current = start;
-    robot.screenPrint("Dijkstra");
+    //robot.screenPrint("Dijkstra");
 
     while(!explored.getValue(endIdx)){
         uint8_t currIdx = tilesMap.getIndex(current);
@@ -277,20 +277,20 @@ void maze::dfs(arrCustom<coord>& visitedMap, arrCustom<Tile>& tiles, arrCustom<c
         if(robot.buttonPressed){
             delay(50);
             if(digitalRead(Pins::checkpointPin) == 1){
-                robot.screenPrint("LoP");
+                //robot.screenPrint("LoP");
                 robotCoord = inicio;
                 robotOrientation = 0;
-                robot.screenPrint("Inicio");
+                //robot.screenPrint("Inicio");
                 bool braker = false;
                 while(true){
                     Serial.println("wat");
-                    robot.screenPrint("Esperando");
+                    //robot.screenPrint("Esperando");
                     if(!robot.buttonPressed){
                         unsigned long time = millis();
                         while(digitalRead(Pins::checkpointPin) == 1){
                             if((millis() - time) > 500){
                                 ESP.restart();
-                                robot.screenPrint("r");
+                                //robot.screenPrint("r");
                                 delay(500);
                                 robot.resetVlx();
                                 robot.bno.setupBNO();
@@ -301,7 +301,7 @@ void maze::dfs(arrCustom<coord>& visitedMap, arrCustom<Tile>& tiles, arrCustom<c
                         break;
                     }
                 }
-                robot.screenPrint("Dale");
+                //robot.screenPrint("Dale");
                 visitedMap.reset();
                 tilesMap.reset();
                 tiles.reset();
@@ -419,7 +419,7 @@ void maze::dfs(arrCustom<coord>& visitedMap, arrCustom<Tile>& tiles, arrCustom<c
                         for(uint8_t i = 0; i < visitedMap.getSize(); ++i){
                             if(visitedMap.getValue(i) == next){ visitedFlag = true; break; }
                         }
-                        if(!visitedFlag){ unvisited.push(next); robot.screenPrint("Entre"); }
+                        if(!visitedFlag){ unvisited.push(next);}
                     }
                 }
             }
@@ -478,7 +478,7 @@ void maze::dfs(arrCustom<coord>& visitedMap, arrCustom<Tile>& tiles, arrCustom<c
         }
     }
 
-    if(unvisited.empty()){ robot.screenPrint("Unvisited empty"); delay(5000); }
+    if(unvisited.empty()){ delay(5000); }
 
     // Only return to start if we actually explored more than just the start tile
     if(!robot.buttonPressed && tilesMap.getUsed() > 1){

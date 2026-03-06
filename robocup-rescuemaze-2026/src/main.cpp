@@ -7,15 +7,9 @@
 
 bool calibrateColor = false;
 maze m;
-constexpr uint8_t Sensors_Amount = 5;
 static constexpr uint32_t vDelay = 33;
 SemaphoreHandle_t i2cSemaphore;
 
-volatile unsigned long LastTime[Sensors_Amount] = {0};
-volatile unsigned long CurrentTime[Sensors_Amount] = {0};
-volatile unsigned long IntraDelta[Sensors_Amount] = {0};
-volatile unsigned long LastReadTime = 0;
-volatile unsigned long InterDelta[Sensors_Amount] = {0};
 
 // Variables para el algoritmo de mano derecha
 bool rightHandStarted = true;
@@ -134,24 +128,11 @@ void setup() {
   robot.resetOrientation();
   
   if (robot.innit == true) {
-    Serial.println("Verificando sensores VLX antes de crear tareas...");
-    
-    //  VERIFICACIÓN CRÍTICA: Probar cada sensor
-    for (uint8_t i = 0; i < Sensors_Amount; i++) {
-      Serial.print("  Sensor VLX["); 
-      Serial.print(i); 
-      Serial.print("]: ");
-      
-      // Intentar lectura
-      uint16_t dist = robot.vlx[i].getDistance();
-      Serial.print(dist);
-      Serial.println(" cm");
-      delay(50);
-    }
     
     Serial.println("\nCreando tareas FreeRTOS...");
     
     //  Tarea para sensores VLX prioritarios (frente) - Stack aumentado
+    /*
     BaseType_t result1 = xTaskCreatePinnedToCore(
       VLXTaskPriority1, 
       "VLXTaskPriority1", 
@@ -164,16 +145,16 @@ void setup() {
     if (result1 != pdPASS) {
       Serial.println("ERROR: No se pudo crear VLXTaskPriority1");
     }
-
+    */
     // ⭐ Tarea para sensores VLX secundarios - Stack aumentado
     BaseType_t result2 = xTaskCreatePinnedToCore(
       VLXTaskPriority2, 
       "VLXTaskPriority2", 
       8192,  // ⭐ Aumentado de 4096 a 8192
       NULL, 
-      2, 
+      1, 
       NULL, 
-      1
+      0
     );
     if (result2 != pdPASS) {
       Serial.println("ERROR: No se pudo crear VLXTaskPriority2");
@@ -221,7 +202,7 @@ void setup() {
    // Dar tiempo para posicionar el robot
 }
 
-
+/*
 // ⭐ Tarea para actualizar sensores VLX prioritarios (frontales)
 void VLXTaskPriority1(void *pv) {
   // ⭐ Delay inicial para asegurar que todo esté listo
@@ -232,13 +213,7 @@ void VLXTaskPriority1(void *pv) {
       //tileColor=tcs_.getColor();
 
       for (uint8_t id : TaskVLX1) {
-        // ⭐ VALIDACIÓN CRÍTICA: Verificar índice
-        if (id >= Sensors_Amount) {
-          Serial.print("ERROR VLXTask1: ID inválido: ");
-          Serial.println(id);
-          continue;
-        }        
-        
+
         // ⭐ Protección adicional
         robot.vlx[id].updateDistance();
         
@@ -251,7 +226,7 @@ void VLXTaskPriority1(void *pv) {
     vTaskDelay(pdMS_TO_TICKS(vDelay));
   }
 }
-
+*/
 // ⭐ Tarea para actualizar sensores VLX secundarios
 void VLXTaskPriority2(void *pv) {
   // ⭐ Delay inicial
@@ -259,17 +234,12 @@ void VLXTaskPriority2(void *pv) {
     // ⭐ Timeout en semáforo
     if (xSemaphoreTake(i2cSemaphore, pdMS_TO_TICKS(100)) == pdTRUE) {
       for (uint8_t id : TaskVLX2) {
-        // ⭐ VALIDACIÓN CRÍTICA
-        if (id >= Sensors_Amount) {
-          Serial.print("ERROR VLXTask2: ID inválido: ");
-          Serial.println(id);
-          continue;
-        }
-        
         robot.vlx[id].updateDistance();
-        
+        xSemaphoreGive(i2cSemaphore);
+        robot.tcs_.updateRGBC();
+        xSemaphoreGive(i2cSemaphore);
+        //robot.tcs_.printRGB();
       }
-      xSemaphoreGive(i2cSemaphore);
     } else {
       Serial.println("WARN: VLXTask2 timeout en semáforo");
     }
@@ -354,19 +324,29 @@ void RightHandNavigationTask(void *pv) {
 
 
 void loop() {
-  /*
-  Serial.println("Raw sensor readings:");
-  Serial.print("frontLeft(0): "); Serial.println(robot.vlx[vlxID::frontLeft].getDistance());
-  Serial.print("rightUp(1):   "); Serial.println(robot.vlx[vlxID::rightUp].getDistance());
-  Serial.print("back(2):      "); Serial.println(robot.vlx[vlxID::back].getDistance());
-  Serial.print("leftUp(3):    "); Serial.println(robot.vlx[vlxID::leftUp].getDistance());
-  Serial.print("frontRight?:  "); Serial.println(robot.vlx[vlxID::frontRight].getDistance());
-  */
+  //testMotors();
+  //robot.ahead();
+  //delay(10000);
+  //robot.ahead();
+  //delay(10000);
   
+  //testTCS();
+ //Serial.println(robot.vlx[vlxID::frontRight].getDistance());
+  //Serial.println(robot.vlx[vlxID::frontLeft].getDistance());
+  //delay(200);
   m.run_algs();
-  while(true) vTaskDelay(pdMS_TO_TICKS(1000));
-  
   //robot.calibrateColors();
+  //while(true) vTaskDelay(pdMS_TO_TICKS(1000));
+  //Serial.println(robot.motor[MotorID::kBackLeft].tics);
+  //testMotors();
+  /*
+  bool rightState=robot.limitSwitch_[LimitSwitchID::kRight].getState();
+  Serial.print("Right State: ");
+  Serial.println(rightState);
+  bool leftState=robot.limitSwitch_[LimitSwitchID::kLeft].getState();
+  Serial.print("Left State: ");
+  Serial.println(leftState);
+  */
   /*
   robot.calibrateColors();
   delay(500);

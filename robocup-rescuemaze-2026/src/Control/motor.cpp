@@ -47,6 +47,11 @@ void Motor::back(){
     digitalWrite(in2,1);
 }
 void Motor::stop(){
+    digitalWrite(in1,0);
+    digitalWrite(in2,0);
+}
+
+void Motor::brake(){
     digitalWrite(in1,1);
     digitalWrite(in2,1);
 }

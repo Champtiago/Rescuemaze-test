@@ -8,6 +8,7 @@
 #include "TCS.h"
 #include <SPI.h>
 #include <ESP32Servo.h>
+#include "LimitSwitch.h"
 
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
@@ -36,27 +37,29 @@ private:
     static constexpr uint8_t brakingDis=2;
     static constexpr uint8_t kDistanceToWall=15;
     //wheels
-    static constexpr float wheelDiameter= 8.0;
+    static constexpr float wheelDiameter= 7.4;
     static constexpr float distancePerRev=wheelDiameter*PI;
-    static constexpr float kTicsPerRev=496; //496
+    static constexpr float kTicsPerRev=494; //496
     static constexpr float kTicsPerTile=30*kTicsPerRev/distancePerRev;
     //Pwm constants
-    uint16_t kMinPwmRotate=100;
-    uint16_t kMaxPwmRotate=150;
-    uint16_t kMinPwmFormard=110;
-    uint16_t kMaxPwmFormard=180;
+    uint16_t kMinPwmRotate=20;
+    uint16_t kMaxPwmRotate=110;
+    // Reduced max/min PWM for forward motion to slow the robot down
+    uint16_t kMinPwmFormard=5;
+    uint16_t kMaxPwmFormard=20;
     //Speeds constants
-    static constexpr uint16_t kMinSpeedRotate=90;
-    static constexpr uint16_t kMaxSpeedRotate=120;
-    static constexpr uint16_t kMinSpeedFormard=110;
-    static constexpr uint16_t kMaxSpeedFormard=180;
+    static constexpr uint16_t kMinSpeedRotate=20;
+    static constexpr uint16_t kMaxSpeedRotate=110;
+    // Reduced max/min speed for forward motion to slow the robot down
+    static constexpr uint16_t kMinSpeedFormard=5;
+    static constexpr uint16_t kMaxSpeedFormard=20;
     static constexpr uint16_t kSpeedRampUp=20;
     static constexpr uint16_t kSpeedRampDown=9;
     //ramp
     PID rampUpPID;
     PID rampDownPID;
     bool slope=false;
-    static constexpr float kMinRampOrientation=18.0; 
+    static constexpr float kMinRampOrientation=25.0; 
     //control Walls
     static constexpr float minDisToLateralWall=6;
     float changeAngle=0;
@@ -104,6 +107,8 @@ public:
     VLX vlx[kNumVlx];
     Servo servo;
     Motor motor[4];
+    LimitSwitch limitSwitch_[2];
+
     //public variables
     bool sameOrientation=false;
     unsigned long buttonTime=millis();
@@ -139,8 +144,10 @@ public:
     void setrightCorner();
     void setleftCorner();
     void stop();
+    void brake();
     void calibrateColors();
     void victimSequency();
+    void limitCrash();
     //movements
     void ahead();    
     void back();
@@ -185,7 +192,8 @@ public:
     void resetTics();
     //ramp
     bool rampInFront();
-    //bool isRamp();
+    bool isRamp();
+    void ramp();
     //comunication
     void wifiPrint(String,float);
     void screenBegin();

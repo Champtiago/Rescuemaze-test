@@ -3,10 +3,10 @@
 #include <Arduino.h>
 
 namespace MotorID{
-    constexpr uint8_t kBackRight=0;
-    constexpr uint8_t kBackLeft=3;   //front left
-    constexpr uint8_t kFrontRight=1; //back left
-    constexpr uint8_t kFrontLeft=2;  //front right
+    constexpr uint8_t kBackRight=3;
+    constexpr uint8_t kBackLeft=2;   //front left
+    constexpr uint8_t kFrontRight=0; //back left
+    constexpr uint8_t kFrontLeft=1;  //front right
 }
 
 namespace Pins{
@@ -24,16 +24,16 @@ namespace Pins{
     };
 
     constexpr uint8_t digitalOne[4] = {
-        15,
+        4,
         17, 
         27, 
-        33  
+        25  
     };  
     constexpr uint8_t digitalTwo[4] = {
-        4, 
+        15, 
         16, 
         14,
-        25
+        33
     };
     constexpr uint8_t vlxPins[7] = {//MUX
         3,  
@@ -63,17 +63,18 @@ namespace LimitSwitchID {
 }
 
 namespace vlxID{
-    constexpr uint8_t frontLeft=0;
-    constexpr uint8_t frontRight=4;
+    constexpr uint8_t frontLeft=3;
+    constexpr uint8_t frontRight=0;
     //constexpr uint8_t rightDown=1;
-    constexpr uint8_t rightUp=1;
-    constexpr uint8_t leftUp=3;
+    constexpr uint8_t rightUp=4;
+    constexpr uint8_t leftUp=2;
     //constexpr uint8_t front=4;
     //constexpr uint8_t leftDown=5; // backLeft
-    constexpr uint8_t back=2;
+    constexpr uint8_t back=1 ;
 
 }
 
+/*
 constexpr uint8_t TaskVLX1[2]{ 
     //vlxID::frontCenter, 
     //vlxID::front, 
@@ -83,11 +84,14 @@ constexpr uint8_t TaskVLX1[2]{
     //vlxID::front,  
     vlxID::frontRight,
 };
+*/
 
-constexpr uint8_t TaskVLX2[3]{
+constexpr uint8_t TaskVLX2[5]{
     vlxID::rightUp,
     vlxID::leftUp,
-    vlxID::back
+    vlxID::back,
+    vlxID::frontRight,
+    vlxID::frontLeft
     //vlxID::leftDown,
     //vlxID::rightDown
     //vlxID::back

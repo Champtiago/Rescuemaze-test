@@ -129,7 +129,7 @@
  C:/Users/santi/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/spi_flash/include/esp_spi_flash_counters.h \
  C:/Users/santi/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_hw_support/include/soc/esp32/spiram.h \
  src/TileDirection.h src/arrCustom.h src/Stack.h src/Encoder.h \
- src/motors.h src/motor.h src/Pins_ID.h src/PID.H src/VLX.h \
+ src/motors.h src/motor.h src/Pins_ID.h src/PID.h src/VLX.h \
  .pio/libdeps/esp32dev/Adafruit_VL53L0X/src/Adafruit_VL53L0X.h \
  C:/Users/santi/.platformio/packages/framework-arduinoespressif32/libraries/Wire/src/Wire.h \
  C:/Users/santi/.platformio/packages/framework-arduinoespressif32/cores/esp32/esp32-hal.h \

@@ -120,3 +120,10 @@ void pidTest(){
     robot.pidEncoders(20,true);
     // robot.PID_Wheel(4,MotorID::kFrontLeft);
 }
+
+void testTCS(){
+    char color = robot.tcs_.getColor();
+    String print=static_cast<String>(color);
+    //robot.screenPrint(print);
+    Serial.println(print);
+}

@@ -21,6 +21,7 @@ public:
     void ahead();
     void back();
     void stop();
+    void brake();
     double getSpeed();
     void resetTics();
     int getTics();

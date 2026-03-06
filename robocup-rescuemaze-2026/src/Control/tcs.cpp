@@ -21,7 +21,7 @@ void TCS::init() {
         
     }
     Serial.println("TCS inicializado");
-    tcs_.setInterrupt(true);
+    tcs_.setInterrupt(false);
 
 }
 
@@ -33,10 +33,8 @@ void TCS::setDefaultValues() {
 
 void TCS::updateRGB() {
     mux_.selectChannel();
-    tcs_.setInterrupt(false);
     delay(millisToWait_);
     tcs_.getRGB(&red_, &green_, &blue_);
-    tcs_.setInterrupt(true);
 }
 
 void TCS::updateRGBC() {
@@ -45,7 +43,7 @@ void TCS::updateRGBC() {
     uint16_t blueR;
     uint16_t clearR;
     mux_.selectChannel();
-    tcs_.setInterrupt(true);
+    tcs_.setInterrupt(false);
     delay(millisToWait_);
     tcs_.getRawData(&redR, &greenR, &blueR, &clearR);
     red_ = redR;
@@ -68,7 +66,7 @@ void TCS::printRGB() {
 
 void TCS::printRGBC() {
     const unsigned long t = millis();
-    updateRGBC();
+    //updateRGBC();
     #if DEBUG_TCS
     customPrint("Time:\t"); customPrintln(millis() - t);
     customPrint("R:\t"); customPrintln(red_);
@@ -83,7 +81,7 @@ void TCS::setMux(const uint8_t posMux) {
 
 
 char TCS::getColor() {
-    updateRGBC();
+    //updateRGBC();
     char colorLetter = kUndefinedColor_;
 
     // TODO: check each color
@@ -124,6 +122,7 @@ char TCS::getColor() {
     Serial.println(green_);
     Serial.println(blue_);
     Serial.println(clear_);
+    Serial.println(colorLetter);
     return colorLetter;
 }
 
