@@ -57,6 +57,8 @@ void setup() {
   } else {
     Serial.println("ERROR: robot.innit = false");
   }
+
+  delay(500);
 }
 
 void VLXTaskPriority2(void *pv) {
@@ -65,24 +67,31 @@ void VLXTaskPriority2(void *pv) {
     for (uint8_t id : TaskVLX2) {
         robot.vlx[id].updateDistance();
     }
-    robot.tcs_.startIntegration();
+    //robot.tcs_.startIntegration();
     xSemaphoreGive(i2cSemaphore);
     }
-
+    /*
     vTaskDelay(pdMS_TO_TICKS(170));
 
     if (xSemaphoreTake(i2cSemaphore, pdMS_TO_TICKS(10)) == pdTRUE) {
         robot.tcs_.updateRGBC();
         xSemaphoreGive(i2cSemaphore);
     }
-    
+    */
     vTaskDelay(pdMS_TO_TICKS(vDelay));
   }
 }
 
 
 void loop() {
-
+  //Serial.println(robot.vlx[vlxID::frontRight].getDistance());
+  //testMotors();
+  //robot.ahead();
+  //delay(3000);
+  //delay(5000);
+  //Serial.println(robot.bno.getOrientationY());
+  //delay(10000);
   m.run_algs();
-  
+  //robot.calibrateColors();
+  //testTCS();
 }

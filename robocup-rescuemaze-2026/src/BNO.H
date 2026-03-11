@@ -17,6 +17,7 @@ class BNO {
         sensors_event_t event_;
         float phaseCorrection_ = 0.0;
         float phaseCorrectionY_=0.0;
+        float phaseCorrectionZ_=0.0;
         const uint8_t I2CAddress = 0x28;
         const int32_t sensorID = 55;
     public:
@@ -26,8 +27,10 @@ class BNO {
         void updateBNO(sensors_event_t &event);
         float getOrientationX();
         float getOrientationY();
+        float getOrientationZ();
         void setPhaseCorrection(float phaseCorrection);
         void setPhaseCorrectionY(float phaseCorrectionY);
+        void setPhaseCorrectionZ(float phaseCorrectionZ);
         void resetOrientation();
         void resetOrientationX();
 };

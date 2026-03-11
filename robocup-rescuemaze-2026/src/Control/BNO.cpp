@@ -50,6 +50,11 @@ float BNO::getOrientationY() {
     return event_.orientation.y-phaseCorrectionY_;
 }
 
+float BNO::getOrientationZ() {
+    updateBNO(event_);
+    return event_.orientation.z-phaseCorrectionZ_;
+}
+
 void BNO::setPhaseCorrection(const float phaseCorrection) {
     phaseCorrection_ = phaseCorrection;
 }
@@ -59,11 +64,16 @@ void BNO::setPhaseCorrectionY(float phaseCorrectionY) {
     phaseCorrectionY_ = phaseCorrectionY;
 }
 
+void BNO::setPhaseCorrectionZ(float phaseCorrectionZ) {
+    phaseCorrectionZ_ = phaseCorrectionZ;
+}
+
 // Reiniciar valores a 0
 void BNO::resetOrientation() {
     updateBNO(event_);
     setPhaseCorrection(event_.orientation.x); // Reinicia el eje X
-    setPhaseCorrectionY(event_.orientation.y); // Reinicia el eje Y
+    setPhaseCorrectionY(event_.orientation.y);
+    setPhaseCorrectionZ(event_.orientation.z); // Reinicia el eje Y
     Serial.println("Valores del BNO055 reiniciados a 0.");
     // bno_.begin();
     // delay(10);bno_.setExtCrystalUse(true);

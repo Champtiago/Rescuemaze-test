@@ -20,7 +20,7 @@
 #define PCA9548A_ADDR 0x70   // PCA9548A Direction
 #define PCA9548A_CHANNEL_4 0x20  // Canal 4 (SDA4/SCL4)
 
-constexpr uint8_t edgeTileDistance=6;
+constexpr uint8_t edgeTileDistance=10;
 constexpr uint8_t kTileLength=30;
 constexpr uint8_t rulet[4][4]={{0,1,2,3},{3,0,1,2},{2,3,0,1},{1,2,3,0}};
 constexpr uint8_t targetDistances[]={edgeTileDistance+2,kTileLength+edgeTileDistance+2};
@@ -37,9 +37,9 @@ private:
     static constexpr uint8_t brakingDis=2;
     static constexpr uint8_t kDistanceToWall=15;
     //wheels
-    static constexpr float wheelDiameter= 7.4;
+    static constexpr float wheelDiameter= 7.5;
     static constexpr float distancePerRev=wheelDiameter*PI;
-    static constexpr float kTicsPerRev=494; //496
+    static constexpr float kTicsPerRev=496; //496
     static constexpr float kTicsPerTile=30*kTicsPerRev/distancePerRev;
     //Pwm constants
     uint16_t kMinPwmRotate=20;
@@ -52,14 +52,14 @@ private:
     static constexpr uint16_t kMaxSpeedRotate=110;
     // Reduced max/min speed for forward motion to slow the robot down
     static constexpr uint16_t kMinSpeedFormard=5;
-    static constexpr uint16_t kMaxSpeedFormard=20;
+    static constexpr uint16_t kMaxSpeedFormard=50;
     static constexpr uint16_t kSpeedRampUp=20;
-    static constexpr uint16_t kSpeedRampDown=9;
+    static constexpr uint16_t kSpeedRampDown=6;
     //ramp
     PID rampUpPID;
     PID rampDownPID;
     bool slope=false;
-    static constexpr float kMinRampOrientation=25.0; 
+    static constexpr float kMinRampOrientation=15.0; 
     //control Walls
     static constexpr float minDisToLateralWall=6;
     float changeAngle=0;
@@ -72,9 +72,9 @@ private:
     static constexpr float kD_mov=1.35;
     static constexpr uint8_t movTime=20;
     //ramp down constants
-    static constexpr float kP_RampDown=0.15;
-    static constexpr float kI_RampDown=0.00;
-    static constexpr float kD_RampDown=0.03;
+    static constexpr float kP_RampDown=0.15;    //0.15
+    static constexpr float kI_RampDown=0.00;  //0.00
+    static constexpr float kD_RampDown=0.03; //0.03
     static constexpr uint8_t rampTime=20;
     //ramp Up constants
     static constexpr float kP_RampUp=0.2;
