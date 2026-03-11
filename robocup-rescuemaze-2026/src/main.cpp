@@ -86,12 +86,12 @@ void VLXTaskPriority2(void *pv) {
 void loop() {
   //Serial.println(robot.vlx[vlxID::frontRight].getDistance());
   //testMotors();
-  //robot.ahead();
+  robot.ahead();
   //delay(3000);
   //delay(5000);
   //Serial.println(robot.bno.getOrientationY());
   //delay(10000);
-  m.run_algs();
+  //m.run_algs();
   //robot.calibrateColors();
   //testTCS();
 }

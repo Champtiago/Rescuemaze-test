@@ -690,7 +690,7 @@ void motors::ramp(){
         if((vlx[vlxID::rightUp].distance<vlx[vlxID::rightUp].kDistanceToWall && vlx[vlxID::leftUp].distance<vlx[vlxID::leftUp].kDistanceToWall) &&
         (vlx[vlxID::rightUp].distance<6 || vlx[vlxID::leftUp].distance<6)){
             error=rampDownPID.calculate_PID(0,(vlx[vlxID::rightUp].distance-vlx[vlxID::leftUp].distance));
-            error=constrain(error,-kSpeedRampDown*(0.67f),kSpeedRampDown*(0.67f));
+            error=constrain(error,-kSpeedRampDown*(0.60f),kSpeedRampDown*(0.60f));
             PID_Wheel(kSpeedRampDown-error,MotorID::kFrontLeft);
             PID_Wheel(kSpeedRampDown-error,MotorID::kBackLeft);
             PID_Wheel(kSpeedRampDown+error,MotorID::kFrontRight);
