@@ -117,6 +117,8 @@ void motors::ahead(){
         float targetDistance=findNearest(distance,frontVlx ? targetDistances:targetDistancesB,6,frontVlx);
         targetDistance=targetDistance;
         while(frontVlx ? (distance>=targetDistance):(distance<=targetDistance)){//poner rango
+            passObstacle();
+            if(buttonPressed) break;
             setahead();
             checkTileColor();
             if(blackTile) break;
@@ -138,6 +140,8 @@ void motors::ahead(){
         }
     }else if(encoder){
         while(getAvergeTics()<kTicsPerTile-offset){
+            passObstacle();
+            if(buttonPressed) break;
             setahead();
             limitCrash();
             checkTileColor();
@@ -198,7 +202,27 @@ void motors::passObstacle(){
     float targetAngle_=targetAngle;
     float frontLeftDistance=vlx[vlxID::frontLeft].getDistance();
     float frontRightDistance=vlx[vlxID::frontRight].getDistance();
-    if((frontLeftDistance>kDistanceToWall) && (frontRightDistance>kDistanceToWall) ){
+    const bool leftValid = frontLeftDistance >= 1 && frontLeftDistance <= maxVlxDistance;
+    const bool rightValid = frontRightDistance >= 1 && frontRightDistance <= maxVlxDistance;
+    if(!leftValid || !rightValid){
+        return;
+    }
+
+    const bool leftBlocked = frontLeftDistance < kDistanceToWall;
+    const bool rightBlocked = frontRightDistance < kDistanceToWall;
+
+    // No obstacle in front.
+    if(!leftBlocked && !rightBlocked){
+        return;
+    }
+
+    // If both front sensors are blocked, it is usually a frontal wall, not an obstacle.
+    if(leftBlocked && rightBlocked){
+        return;
+    }
+
+    // If readings are almost symmetric, it is likely a wall/corner reflection.
+    if(abs(frontLeftDistance - frontRightDistance) < 2){
         return;
     }
     moveDistance(kTileLength/6,true);
@@ -207,13 +231,13 @@ void motors::passObstacle(){
         if(targetAngle==360){
             targetAngle=0;
         }
-        rotate(targetAngle+25);
+        rotate(targetAngle+35);
     }else if(frontLeftDistance<kDistanceToWall){
         // limitColition=true;
         if(targetAngle==0){
             targetAngle=360;
         }
-        rotate(targetAngle-25);
+        rotate(targetAngle-35);
     }
     delay(300);
     moveDistance(kTileLength/5,false);

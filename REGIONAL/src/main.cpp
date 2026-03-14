@@ -29,9 +29,9 @@ void loop() {
   // robot.kitRight(1);
   // delay(1000);
   //Serial.println(" PUTO");
-  //m.run_algs();
+  m.run_algs();
   //testTCS();
-  robot.ahead();
+  //robot.ahead();
   //Serial.println(robot.bno.getOrientationY());
   // robot.setahead();
   // robot.setSpeed(50);
